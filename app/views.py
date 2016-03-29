@@ -3,7 +3,8 @@
 from . import app, db
 from flask import jsonify, request, session
 from . import models
-from models import Cafe, Comment, User
+from models import Cafe, Comment, User, OpenTime
+from . import cafe_crawler
 
 @app.route('/')
 def index():
@@ -13,7 +14,7 @@ def index():
 @app.route('/cafe', methods=['GET', 'POST'])
 def cafe():
     if request.method == 'GET':
-        cafe_list = Cafe.query.all()
+        cafe_list = Cafe.query.outerjoin(OpenTime).all()
 
         cafe_serialized_list = []
         for each_cafe in cafe_list:
@@ -22,10 +23,10 @@ def cafe():
     elif request.method == 'POST':
         name = request.json.get('name')
         is24 = request.json.get('is24')
-        lat = request.json.get('lat')
-        lng = request.json.get('lng')
+        lat = request.json.get('x')
+        lng = request.json.get('y')
 
-        cafe = Cafe(name=name, is24=is24, lat=lat, lng=lng)
+        cafe = Cafe(name=name, is24=is24, x=lat, y=lng)
         db.session.add(cafe)
         db.session.commit()
         return jsonify({'results':'success'})
@@ -84,3 +85,16 @@ def login():
         'userid':user.userid
     }})
 
+@app.route('/crawl')
+def crawl_cafe():
+    start_page = request.args.get('start_page')
+    num = request.args.get('num')
+    result_list = cafe_crawler.crawl(start_page, num)
+    for each_cafe in result_list:
+        cafe = Cafe(name=each_cafe['name'], address=each_cafe['roadAddress'], description=each_cafe['description'],
+             x=each_cafe['x'], y=each_cafe['y'], thumUrl=each_cafe['thumUrl'])
+        for each_open_time in each_cafe['open']:
+            cafe.open_time_list.append(OpenTime(label=each_open_time['label'], time=each_open_time['time']))
+        db.session.add(cafe)
+        db.session.commit()
+    return jsonify({'result': result_list})
