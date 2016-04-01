@@ -103,4 +103,5 @@ def map():
     cafe_serialized_list = []
     for each_cafe in cafe_list:
         cafe_serialized_list.append(each_cafe.serialize)
-    return render_template('map.html', cafeList=cafe_serialized_list)
+    cafe_num = len(cafe_serialized_list)
+    return render_template('map.html', cafeList=cafe_serialized_list, cafeNum=cafe_num)
