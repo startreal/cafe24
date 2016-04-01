@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from . import app, db
-from flask import jsonify, request, session
+from flask import jsonify, request, session, render_template
 from . import models
 from models import Cafe, Comment, User, OpenTime
 from . import cafe_crawler
@@ -42,7 +42,6 @@ def comment():
         comment_json_list = []
         for each_comment in comment_list:
             comment_json_list.append(each_comment.serialize)
-
         return jsonify({'results': comment_json_list})
 
     elif request.method == 'POST':
@@ -52,7 +51,6 @@ def comment():
         db.session.add(comment)
         db.session.commit()
         return jsonify({'results':'succses'})
-
 
 @app.route('/user', methods=['POST', 'GET'])
 def user():
@@ -98,3 +96,11 @@ def crawl_cafe():
         db.session.add(cafe)
         db.session.commit()
     return jsonify({'result': result_list})
+
+@app.route('/map')
+def map():
+    cafe_list = Cafe.query.outerjoin(OpenTime).all()
+    cafe_serialized_list = []
+    for each_cafe in cafe_list:
+        cafe_serialized_list.append(each_cafe.serialize)
+    return render_template('map.html', cafeList=cafe_serialized_list)
