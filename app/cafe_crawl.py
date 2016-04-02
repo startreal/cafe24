@@ -2,7 +2,7 @@
 import requests
 import lxml.html
 import time
-
+from flask import jsonify
 
 class CafeCrawler():
 
@@ -51,6 +51,7 @@ class CafeCrawler():
         url = base_url+str(cafe_id)
         print url
         res = requests.get(url, headers=headers)
+
 
         root = lxml.html.fromstring(res.content)
         open_dict_list = []

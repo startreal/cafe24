@@ -105,3 +105,7 @@ def map():
         cafe_serialized_list.append(each_cafe.serialize)
     cafe_num = len(cafe_serialized_list)
     return render_template('map.html', cafeList=cafe_serialized_list, cafeNum=cafe_num)
+
+@app.route('/test')
+def test():
+    return jsonify({'result':cafe_crawler.crawl_cafe_page('s31689548')})
